@@ -1,5 +1,5 @@
-import model.Posts;
-import model.Users;
+import Model.Post;
+import Model.Users;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,18 +10,18 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet(name = "NewPostServlet")
-public class NewPostServlet extends HttpServlet {
+@WebServlet(name = "AddNewPostServlet")
+public class AddNewPostServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Posts post = new Posts();
-        boolean st = false;
+        Post post = new Post();
+        boolean status = false;
         PrintWriter out = response.getWriter();
         response.setContentType("text/html");
 
         String topic = request.getParameter("topic");
         String text = request.getParameter("text");
         HttpSession adminSession = request.getSession(false);
-        Users user = (Users) request.getSession().getAttribute("loggedUser");
+        Users user = (Users) request.getSession().getAttribute("logged_user");
 
         if(!topic.equals("") && !text.equals("")){
             post.setTopic(topic);
@@ -29,24 +29,20 @@ public class NewPostServlet extends HttpServlet {
             post.setLike(0);
             post.setDislike(0);
             post.setUserId(user.getId());
-            st = new DAO().newPost(post);
-            if(st){
-                out.println("<script>alert('Post successfully added!')</script>");
-                adminSession.setAttribute("message","Post successfully added!" );
-                response.sendRedirect("ListOfPosts.jsp");
+            status = new PostDAO().newPost(post);
+            if(status){
+                out.println("<script>alert('Model.Post successfully added!')</script>");
+                adminSession.setAttribute("message","Model.Post successfully added!" );
+                response.sendRedirect("PostsList.jsp");
             }else{
                 out.println("<script>alert('Error ! This kind of post already exists in the base')</script>");
                 adminSession.setAttribute("message","Error ! Try again!" );
-                response.sendRedirect("ListOfPosts.jsp");
+                response.sendRedirect("PostsList.jsp");
             }
         }else{
             out.println("<script>alert('Try again !')</script>");
-            response.sendRedirect("ListOfPosts.jsp");
+            response.sendRedirect("PostsList.jsp");
         }
-
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-doPost(request,response);
-    }
 }

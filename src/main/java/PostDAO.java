@@ -1,48 +1,27 @@
-import model.Posts;
-import model.Users;
+import Model.Comment;
+import Model.Post;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DAO {
-    public static Connection getConnection() {
-        Connection con = null;
-        try {
+public class PostDAO {
+    public static Connection getConnection(){
+        Connection con=null;
+        try{
             Class.forName("org.postgresql.Driver");
-            con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/javaEE", "postgres", "123");
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+            con= DriverManager.getConnection("jdbc:postgresql://localhost:5432/PhoneStore","postgres","123");
+        }catch(Exception e){System.out.println(e);}
         return con;
     }
-
-    public static boolean validate(String email, String pass) {
-        boolean status = false;
+    public boolean newPost(Post posts) {
         try {
-            Class.forName("org.postgresql.Driver");
-            Connection con = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/PhoneStore", "postgres", "123");
-            // getConnection();
+            Connection con = PostDAO.getConnection();
             PreparedStatement ps = con.prepareStatement(
-                    "select * from users where email=? and pass=?");
-            ps.setString(1, email);
-            ps.setString(2, pass);
-
-            ResultSet rs = ps.executeQuery();
-            status = rs.next();
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        return status;
-    }
-
-    public boolean newPost(Posts posts) {
-        try {
-            Connection con = DAO.getConnection();
-            PreparedStatement ps = con.prepareStatement(
-                    "insert into posts(topic,text,likePost,dislike,userID) values (?,?,?,?,?)");
+                    "insert into posts(topic,text,likes,dislikes,userID) values (?,?,?,?,?)");
             ps.setString(1, posts.getTopic());
             ps.setString(2, posts.getText());
             ps.setInt(3, posts.getLike());
@@ -57,12 +36,12 @@ public class DAO {
         return false;
     }
 
-    public Posts getPostByID(int id){
-        Posts post = null;
+    public Post getPostByID(int id){
+        Post post = null;
         try {
-            Connection con = DAO.getConnection();
+            Connection con = PostDAO.getConnection();
             PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM posts WHERE id=?");
+                    "SELECT * FROM posts WHERE postid=?");
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
                 int postId = rs.getInt(1);
@@ -71,7 +50,7 @@ public class DAO {
                 int like = rs.getInt(4);
                 int dislike = rs.getInt(5);
                 int userId = rs.getInt(6);
-                post = new Posts();
+                post = new Post();
                 post.setId(postId);
                 post.setUserId(userId);
                 post.setTopic(topic);
@@ -86,10 +65,10 @@ public class DAO {
         return post;
     }
 
-    public ArrayList<Posts> getAllPost(){
-        ArrayList<Posts> posts = new ArrayList<>();
+    public ArrayList<Post> getAllPost(){
+        ArrayList<Post> posts = new ArrayList<>();
         try {
-            Connection con = DAO.getConnection();
+            Connection con = PostDAO.getConnection();
             PreparedStatement ps = con.prepareStatement(
                     "SELECT * FROM posts");
             ResultSet rs = ps.executeQuery();
@@ -100,7 +79,7 @@ public class DAO {
                 int like = rs.getInt(4);
                 int dislike = rs.getInt(5);
                 int userId = rs.getInt(6);
-                Posts post = new Posts();
+                Post post = new Post();
                 post.setId(postId);
                 post.setUserId(userId);
                 post.setTopic(topic);
@@ -115,12 +94,55 @@ public class DAO {
         return posts;
     }
 
-
-    public void updateLikes(Posts post) {
+    public List<?> getComments(int id){
+        ArrayList<Comment> comments = new ArrayList<>();
         try {
-            Connection con = DAO.getConnection();
+            Connection con = PostDAO.getConnection();
             PreparedStatement ps = con.prepareStatement(
-                    "update posts set likePost=?,dislike=? where id=?");
+                    "SELECT * FROM comments where postid =" + id);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                int comId = rs.getInt(1);
+                int postId = rs.getInt(2);
+                String username = rs.getString(3);
+                String comBody = rs.getString(4);
+                Comment com = new Comment();
+                com.setId(comId);
+                com.setComment(comBody);
+                com.setPostId(postId);
+                com.setUserName(username);
+                comments.add(com);
+            }
+
+        }catch (Exception ex) {
+            ex.printStackTrace();}
+        return comments;
+    }
+
+    public boolean addComment(Comment com){
+        try {
+            Connection con = PostDAO.getConnection();
+            PreparedStatement ps = con.prepareStatement("INSERT INTO comments (postid, comment, username) Values (?, ?, ?)");
+            ps.setInt(1, com.getPostId());
+            ps.setString(2,com.getComment());
+            ps.setString(3,com.getUserName());
+            ps.executeUpdate();
+            return true;
+
+        }catch (Exception ex){
+            System.out.println(ex);
+        }
+        return false;
+    }
+
+
+
+
+    public void updateLikes(Post post) {
+        try {
+            Connection con = PostDAO.getConnection();
+            PreparedStatement ps = con.prepareStatement(
+                    "update posts set likes=?,dislikes=? where postid=?");
             ps.setInt(1, post.getLike());
             ps.setInt(2, post.getDislike());
             ps.setInt(3, post.getId());
@@ -134,8 +156,8 @@ public class DAO {
     public boolean delete(int id) {
 
         try {
-            Connection con = DAO.getConnection();
-            PreparedStatement ps = con.prepareStatement("delete from posts where id=?");
+            Connection con = PostDAO.getConnection();
+            PreparedStatement ps = con.prepareStatement("delete from posts where postid=?");
             ps.setInt(1, id);
             ps.executeUpdate();
             con.close();
@@ -147,11 +169,11 @@ public class DAO {
         return false;
     }
 
-    public boolean editPost(Posts p){
+    public boolean editPost(Post p){
 
         try{
-            Connection con= DAO.getConnection();
-            PreparedStatement ps=con.prepareStatement("UPDATE posts SET topic = ?, text = ? WHERE id = ?");
+            Connection con= PostDAO.getConnection();
+            PreparedStatement ps=con.prepareStatement("UPDATE posts SET topic = ?, text = ? WHERE postid = ?");
             ps.setString(1,p.getTopic());
             ps.setString(2,p.getText());
             ps.setInt(3,p.getId());
@@ -162,4 +184,5 @@ public class DAO {
 
         return false;
     }
+
 }

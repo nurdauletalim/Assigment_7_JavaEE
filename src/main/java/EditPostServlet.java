@@ -1,4 +1,4 @@
-import model.Posts;
+import Model.Post;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,30 +11,29 @@ import java.io.PrintWriter;
 
 @WebServlet(name = "EditPostServlet")
 public class EditPostServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int postId = (int) request.getSession().getAttribute("postId");
-        String topic= request.getParameter("topic");
+        String theme= request.getParameter("topic");
         String text = request.getParameter("text");
-        Posts post = new Posts();
+        Post post = new Post();
         HttpSession adminSession = request.getSession(false);
 
-        boolean st = false;
+        boolean status = false;
         PrintWriter out = response.getWriter();
-        if(!topic.equals("") && !text.equals("") && postId != 0){
+        if(!theme.equals("") && !text.equals("") && postId != 0){
             post.setId(postId);
-            post.setTopic(topic);
+            post.setTopic(theme);
             post.setText(text);
             try {
-                st = new DAO().editPost(post);
+                status = new PostDAO().editPost(post);
             } catch (Exception e) {
                 adminSession.setAttribute("exception",e);
                 e.printStackTrace();
             }
-            if(st){
-                response.sendRedirect("ListOfPosts.jsp");
+            if(status){
+                response.sendRedirect("PostsList.jsp");
             }else{
-                response.sendRedirect("ListOfPosts.jsp");
+                response.sendRedirect("PostsList.jsp");
             }
         }else{
             out.println("<script>alert('Try again')</script>");
@@ -44,11 +43,11 @@ public class EditPostServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String postId = request.getParameter("postId");
-        Posts post = new Posts();
+        Post post = new Post();
 
         if(postId != null && !(postId.equals(""))){
             try {
-                post = new DAO().getPostByID(Integer.parseInt(postId));
+                post = new PostDAO().getPostByID(Integer.parseInt(postId));
             } catch (Exception e) {
                 request.getSession().setAttribute("exception",e.getMessage());
             }
@@ -56,7 +55,7 @@ public class EditPostServlet extends HttpServlet {
             request.getSession().setAttribute("postId", post.getId());
             response.sendRedirect("EditPost.jsp");
         }else{
-            response.sendRedirect("ListOfPosts.jsp");
+            response.sendRedirect("PostsList.jsp");
         }
     }
 }

@@ -15,7 +15,7 @@ import java.sql.PreparedStatement;
 @WebServlet(name = "RegisterServlet")
 public class RegisterServlet extends HttpServlet {
     static final String JDBC_DRIVER = "org.postgresql.Driver";
-    static final String DATABASE_URL = "jdbc:postgresql://localhost:5432/javaEE";
+    static final String DATABASE_URL = "jdbc:postgresql://localhost:5432/PhoneStore";
     static final String DATABASE_USER = "postgres";
     static final String DATABASE_PASSWORD = "123";
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

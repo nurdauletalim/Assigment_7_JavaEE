@@ -1,13 +1,11 @@
-package model;
+package Model;
 
 import java.io.Serializable;
 
-public class Posts implements Serializable {
-    private int id;
-    private String topic, text;
-    private int like, dislike, userId;
-
-    public Posts(){}
+public class Post implements Serializable{
+    private int id,like,dislike,userId;
+    private String topic,text;
+    public Post(){}
 
     public int getId() {
         return id;
@@ -15,22 +13,6 @@ public class Posts implements Serializable {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 
     public int getLike() {
@@ -56,4 +38,21 @@ public class Posts implements Serializable {
     public void setUserId(int userId) {
         this.userId = userId;
     }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }
+
